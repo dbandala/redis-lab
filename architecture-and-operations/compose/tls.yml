@@ -1,0 +1,22 @@
+name: redis-lab-tls
+
+services:
+  redis-tls:
+    image: redis:8.10.1
+    container_name: redis-tls
+    ports:
+      - "6443:6443"
+    volumes:
+      - redis-tls-data:/data
+      - ../certs:/tls:ro
+    command: ["redis-server",
+      "--port", "0",
+      "--tls-port", "6443",
+      "--tls-cert-file", "/tls/redis.crt",
+      "--tls-key-file", "/tls/redis.key",
+      "--tls-ca-cert-file", "/tls/ca.crt",
+      "--tls-auth-clients", "yes",
+      "--save", "60", "1", "--appendonly", "yes"]
+
+volumes:
+  redis-tls-data:

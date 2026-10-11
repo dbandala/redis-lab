@@ -1,0 +1,72 @@
+name: redis-lab-sentinel
+
+services:
+  redis-sentinel-primary:
+    image: redis:8.10.1
+    container_name: redis-sentinel-primary
+    ports: ["6390:6379"]
+    volumes: [redis-sentinel-primary-data:/data]
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes"]
+    networks: [redis-sentinel-net]
+
+  redis-sentinel-replica-1:
+    image: redis:8.10.1
+    container_name: redis-sentinel-replica-1
+    depends_on: [redis-sentinel-primary]
+    ports: ["6391:6379"]
+    volumes: [redis-sentinel-replica-1-data:/data]
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes",
+              "--replicaof", "redis-sentinel-primary", "6379"]
+    networks: [redis-sentinel-net]
+
+  redis-sentinel-replica-2:
+    image: redis:8.10.1
+    container_name: redis-sentinel-replica-2
+    depends_on: [redis-sentinel-primary]
+    ports: ["6392:6379"]
+    volumes: [redis-sentinel-replica-2-data:/data]
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes",
+              "--replicaof", "redis-sentinel-primary", "6379"]
+    networks: [redis-sentinel-net]
+
+  sentinel-1:
+    image: redis:8.10.1
+    container_name: sentinel-1
+    depends_on: [redis-sentinel-primary]
+    ports: ["26390:26379"]
+    volumes:
+      - ../sentinel/sentinel.conf.tpl:/etc/redis/sentinel.conf.tpl:ro
+    entrypoint: ["sh", "-c",
+      "cp /etc/redis/sentinel.conf.tpl /tmp/sentinel.conf && exec redis-sentinel /tmp/sentinel.conf"]
+    networks: [redis-sentinel-net]
+
+  sentinel-2:
+    image: redis:8.10.1
+    container_name: sentinel-2
+    depends_on: [redis-sentinel-primary]
+    ports: ["26391:26379"]
+    volumes:
+      - ../sentinel/sentinel.conf.tpl:/etc/redis/sentinel.conf.tpl:ro
+    entrypoint: ["sh", "-c",
+      "cp /etc/redis/sentinel.conf.tpl /tmp/sentinel.conf && exec redis-sentinel /tmp/sentinel.conf"]
+    networks: [redis-sentinel-net]
+
+  sentinel-3:
+    image: redis:8.10.1
+    container_name: sentinel-3
+    depends_on: [redis-sentinel-primary]
+    ports: ["26392:26379"]
+    volumes:
+      - ../sentinel/sentinel.conf.tpl:/etc/redis/sentinel.conf.tpl:ro
+    entrypoint: ["sh", "-c",
+      "cp /etc/redis/sentinel.conf.tpl /tmp/sentinel.conf && exec redis-sentinel /tmp/sentinel.conf"]
+    networks: [redis-sentinel-net]
+
+networks:
+  redis-sentinel-net:
+    name: redis-lab-sentinel-net
+
+volumes:
+  redis-sentinel-primary-data:
+  redis-sentinel-replica-1-data:
+  redis-sentinel-replica-2-data:

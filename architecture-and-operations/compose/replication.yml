@@ -1,0 +1,45 @@
+name: redis-lab-replication
+
+services:
+  redis-repl-primary:
+    image: redis:8.10.1
+    container_name: redis-repl-primary
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-repl-primary-data:/data
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes"]
+    networks: [redis-repl-net]
+
+  redis-repl-replica-1:
+    image: redis:8.10.1
+    container_name: redis-repl-replica-1
+    depends_on: [redis-repl-primary]
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis-repl-replica-1-data:/data
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes",
+              "--replicaof", "redis-repl-primary", "6379"]
+    networks: [redis-repl-net]
+
+  redis-repl-replica-2:
+    image: redis:8.10.1
+    container_name: redis-repl-replica-2
+    depends_on: [redis-repl-primary]
+    ports:
+      - "6382:6379"
+    volumes:
+      - redis-repl-replica-2-data:/data
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes",
+              "--replicaof", "redis-repl-primary", "6379"]
+    networks: [redis-repl-net]
+
+networks:
+  redis-repl-net:
+    name: redis-lab-replication-net
+
+volumes:
+  redis-repl-primary-data:
+  redis-repl-replica-1-data:
+  redis-repl-replica-2-data:
