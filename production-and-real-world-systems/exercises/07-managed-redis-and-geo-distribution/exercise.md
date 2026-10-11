@@ -1,0 +1,9 @@
+# Exercise 07 — Managed Redis & Geo-Distribution
+
+This is a design-doc exercise, not a hands-on lab — there's no local stack to run it against. Write your answers as prose (a few sentences each is enough); there's no `verify.sh` for this one.
+
+1. Pulse is expanding to serve fans in both North America and Europe, and product wants both regions to get local-latency reads *and writes* against the same live event inventory, with no single region acting as the sole primary. Name the Redis feature that fits this requirement and explain, in your own words, what makes it safe for two regions to accept conflicting-looking writes at the same time without a human resolving the conflict.
+2. Pulse's infrastructure team currently runs everything on AWS and is about to provision a managed Redis-compatible cache for a new service that needs Redis 8's native JSON and vector search (from Level 3). Explain why simply reaching for "AWS's managed Redis" is not a safe assumption anymore, and name the two concrete options available if they want genuine current Redis while staying on AWS infrastructure.
+3. Pulse also has a team running on Azure. If they're currently using "Azure Cache for Redis," what do they need to know about its future, and what's the name of the product Microsoft wants them to migrate to?
+4. In one sentence, explain what Smart Client Handoffs does for an application during a managed-service maintenance event, and why it matters more for a payment-processing request than for a cache-aside read.
+5. In 2–3 sentences, make a recommendation: for Pulse's current single-region (US) deployment, is Active-Active worth adopting today, or does Level 4's Sentinel-based single-primary failover (already built) cover the actual need? Justify your answer against a real requirement, not just "more features is better."

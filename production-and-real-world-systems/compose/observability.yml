@@ -1,0 +1,77 @@
+name: redis-lab-observability
+
+services:
+  redis-observability:
+    image: redis:8.10.1
+    container_name: redis-observability
+    ports:
+      - "6410:6379"   # redis-cli / RESP protocol
+    volumes:
+      - redis-observability-data:/data
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes", "--enable-debug-command", "yes"]
+    networks:
+      - redis-observability-net
+
+  redisinsight-observability:
+    image: redis/redisinsight:3.8.0
+    container_name: redisinsight-observability
+    depends_on:
+      - redis-observability
+    ports:
+      - "8001:5540"   # RedisInsight web UI
+    volumes:
+      - redisinsight-observability-data:/data
+    networks:
+      - redis-observability-net
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.93.0
+    container_name: redis-exporter
+    depends_on:
+      - redis-observability
+    command: ["--redis.addr=redis://redis-observability:6379"]
+    ports:
+      - "9121:9121"   # Prometheus /metrics endpoint
+    networks:
+      - redis-observability-net
+
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    container_name: prometheus
+    depends_on:
+      - redis-exporter
+    ports:
+      - "9090:9090"   # Prometheus web UI / API
+    volumes:
+      - ../observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - redis-observability-net
+
+  grafana:
+    image: grafana/grafana:13.2.3
+    container_name: grafana
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"   # Grafana web UI
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=pulse-admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    volumes:
+      - ../observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../observability/grafana/dashboards:/var/lib/grafana-dashboards:ro
+      - grafana-data:/var/lib/grafana
+    networks:
+      - redis-observability-net
+
+networks:
+  redis-observability-net:
+    name: redis-lab-observability-net
+
+volumes:
+  redis-observability-data:
+  redisinsight-observability-data:
+  prometheus-data:
+  grafana-data:

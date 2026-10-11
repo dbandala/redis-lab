@@ -1,0 +1,106 @@
+{
+  "title": "Pulse Redis — Level 5 Observability",
+  "uid": "pulse-redis",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "timezone": "browser",
+  "refresh": "5s",
+  "time": { "from": "now-15m", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Redis Up",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [ { "value": null, "color": "red" }, { "value": 1, "color": "green" } ] }
+        },
+        "overrides": []
+      },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "redis_up", "refId": "A" }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Connected Clients",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [ { "value": null, "color": "blue" } ] } }, "overrides": [] },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "redis_connected_clients", "refId": "A" }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Memory Used",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "min": 0,
+          "max": 536870912,
+          "thresholds": { "mode": "absolute", "steps": [ { "value": null, "color": "green" }, { "value": 268435456, "color": "yellow" }, { "value": 429496729, "color": "red" } ] }
+        },
+        "overrides": []
+      },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "redis_memory_used_bytes", "refId": "A" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Redis Version / Uptime",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "redis_uptime_in_seconds", "refId": "A" }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Commands/sec — Lesson 01 (SLOWLOG) & capstone traffic check",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "rate(redis_commands_processed_total[1m])", "legendFormat": "commands/sec", "refId": "A" }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Cache Hits vs Misses/sec — Lesson 03 (cache-aside)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "rate(redis_keyspace_hits_total[1m])", "legendFormat": "hits/sec", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "rate(redis_keyspace_misses_total[1m])", "legendFormat": "misses/sec", "refId": "B" }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Slow Commands/sec — Lesson 01 (SLOWLOG)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "rate(redis_slowlog_commands_total[1m])", "legendFormat": "slow commands/sec", "refId": "A" }
+      ]
+    }
+  ]
+}
